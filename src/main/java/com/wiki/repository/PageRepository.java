@@ -13,10 +13,14 @@ import java.util.List;
 @CrossOrigin
 @Repository
 public interface PageRepository extends CrudRepository<Page, Long> {
-    @Query("Select page From Page page Where (:id is null or page.author.id = :id) and" +
-            ":link is null or page.link = :link")
-    List<Page> search(@Param("id") Long id, @Param("link") String link);
+    @Query("Select page From Page page Where (:id is null or page.author.id = :id) and " +
+            " (:link is null or page.link = :link) and " +
+            " (:version is null or page.lastVersion = :version) and " +
+            " (page.blocked = false)")
+    List<Page> search(@Param("id") Long id, @Param("link") String link, @Param("version")boolean version);
 
-    @Query("Select page From Page page Where exists(select users from page.allowedToRead users where users.id = :id )")
-    List<Page> findAvailable(@Param("id") Long id);
+    @Query("Select page From Page page Where exists(select users from page.allowedToRead users where (users.id = :id) and " +
+            " (page.lastVersion = :version) and " +
+            " (page.blocked = false))")
+    List<Page> findAvailable(@Param("id") Long id, @Param("version")boolean version);
 }

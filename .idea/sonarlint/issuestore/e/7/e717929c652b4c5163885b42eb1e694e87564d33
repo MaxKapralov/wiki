@@ -1,4 +1,2 @@
 
-tsquid:UselessImportCheck
-"DRemove this unused import 'org.springframework.http.ResponseEntity'.(¶¯ø¦úÿÿÿÿ8ò¡©ßí,
-psquid:UselessImportCheck	"@Remove this unused import 'org.springframework.http.HttpStatus'.(íŸ¤Šúÿÿÿÿ8ò¡©ßí,
+isquid:S1192"KDefine a constant instead of duplicating this literal "ROLE_ADMIN" 3 times.(ˆ¼Þï8ÃãÐ€ï,

@@ -5,7 +5,6 @@ import com.wiki.service.PageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
@@ -30,17 +29,17 @@ public class PageController {
 
     @PutMapping
     public ResponseEntity<Void> updateEntity(@RequestBody PageDTO page, Authentication authentication) {
-        if (!page.getAuthor().getUsername().equals(authentication.getName()) || !authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+         if(pageService.update(page, authentication)) {
+             return new ResponseEntity<>(HttpStatus.OK);
         }
-        pageService.save(page);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 
     @GetMapping
     public ResponseEntity<List<PageDTO>> getAll(@RequestParam(name = "author", required = false) Long author,
-                                                @RequestParam(name = "link", required = false) String link, Authentication authentication) {
-        Optional<List<PageDTO>> pages = pageService.getAll(author, link, authentication);
+                                                @RequestParam(name = "link", required = false) String link, @RequestParam(name = "lastVersion", required = false) Boolean lastVersion,
+                                                Authentication authentication) {
+        Optional<List<PageDTO>> pages = pageService.getAll(author, link, lastVersion, authentication);
         return pages.map(ResponseEntity::ok).orElse(new ResponseEntity<>(HttpStatus.FORBIDDEN));
     }
     @GetMapping("/available")

@@ -25,12 +25,17 @@ public class Page extends BaseEntity {
     private Instant timestamp;
 
     @NotNull
-    @Column(unique = true)
     private String link;
 
     @NotNull
     @ManyToMany
     private Set<User> allowedToRead;
+
+    @NotNull
+    private boolean lastVersion;
+
+    @NotNull
+    private boolean blocked;
 
     protected Page() {
     }
@@ -42,6 +47,8 @@ public class Page extends BaseEntity {
         this.timestamp = timestamp;
         this.allowedToRead = allowedToRead;
         this.link = title.replaceAll("\\s+", "");
+        lastVersion = true;
+        blocked = false;
     }
 
     public User getAuthor() {
@@ -68,8 +75,24 @@ public class Page extends BaseEntity {
         return allowedToRead;
     }
 
+    public boolean isLastVersion() {
+        return lastVersion;
+    }
+
     public void setAllowedToRead(Set<User> allowedToRead) {
         this.allowedToRead = allowedToRead;
+    }
+
+    public void setVersion(boolean lastVersion) {
+        this.lastVersion = lastVersion;
+    }
+
+    public boolean isBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
     }
 
     @Override

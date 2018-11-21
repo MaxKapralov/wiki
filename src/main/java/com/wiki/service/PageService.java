@@ -27,21 +27,32 @@ public class PageService {
         this.userRepository = userRepository;
     }
 
+    public boolean update(PageDTO page, Authentication authentication) {
+        if (!page.getAuthor().getUsername().equals(authentication.getName()) || !authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            return false;
+        }
+        Long id = page.getId();
+        this.pageRepository.findById(id).ifPresent(item -> {
+            item.setVersion(false);
+            pageRepository.save(item);
+        });
+        page.setId(null);
+        save(page);
+        return true;
+    }
+
     public void save(PageDTO page) {
         Set<User> allowedToRead = new HashSet<>();
         userRepository.findById(page.getAuthor().getId()).ifPresent(author -> {
             page.getAllowedToRead().forEach(user ->
                     userRepository.findById(user.getId()).ifPresent(allowedToRead::add));
             Page entity = new Page(author, page.getContent(), page.getTitle(), page.getTimestamp(), allowedToRead);
-            if (page.getId() != null) {
-                entity.setId(page.getId());
-            }
             pageRepository.save(entity);
         });
     }
 
-    public Optional<List<PageDTO>> getAll(Long id, String link, Authentication authentication) {
-        List<Page> list = pageRepository.search(id, link);
+    public Optional<List<PageDTO>> getAll(Long id, String link, Boolean lastVersion, Authentication authentication) {
+        List<Page> list = pageRepository.search(id, link, lastVersion);
         boolean accessAllowed = list.stream().allMatch(page ->
                 page.getAuthor().getIdentity().getUsername().equals(authentication.getName())
                         || authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
@@ -60,7 +71,7 @@ public class PageService {
         UserDTO author = new UserDTO(page.getAuthor().getId(), page.getAuthor().getIdentity().getUsername(),
                 page.getAuthor().getName() + " " + page.getAuthor().getSurname());
         Set<UserDTO> allowedToRead = page.getAllowedToRead().stream().map(user -> new UserDTO(user.getId(), user.getIdentity().getUsername(), user.getFullName())).collect(Collectors.toSet());
-        return new PageDTO(page.getId(), page.getContent(), page.getTitle(), page.getTimestamp(), author, allowedToRead);
+        return new PageDTO(page.getId(), page.getContent(), page.getTitle(), page.getTimestamp(), author, allowedToRead, page.isLastVersion());
     }
 
     public boolean delete(Long id, Authentication authentication) {
@@ -68,7 +79,8 @@ public class PageService {
             if (!val.getAuthor().getIdentity().getUsername().equals(authentication.getName()) || !authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
                 return false;
             }
-            this.pageRepository.deleteById(id);
+            val.setBlocked(true);
+            this.pageRepository.save(val);
             return true;
         }).orElse(false);
     }
@@ -78,8 +90,11 @@ public class PageService {
     }
 
     public Optional<List<PageDTO>> getAvailable(Long id, Authentication authentication) {
+        Optional<List<PageDTO>> pages;
         if(checkAccess(id, authentication)) {
-            return Optional.of(pageRepository.findAvailable(id).stream().map(this::convertPageToDTO).collect(Collectors.toList()));
+            pages =  Optional.of(pageRepository.findAvailable(id, true).stream().map(this::convertPageToDTO).collect(Collectors.toList()));
+            pages.ifPresent(items -> this.getAll(id, null, true, authentication).ifPresent(items::addAll));
+            return pages;
         }
         return Optional.ofNullable(null);
     }

@@ -1,5 +1,6 @@
 package com.wiki.model.dto;
 
+
 import java.time.Instant;
 import java.util.Set;
 
@@ -16,16 +17,23 @@ public class PageDTO {
 
     private Set<UserDTO> allowedToRead;
 
-    public PageDTO(Long id, String content, String title, Instant timestamp, UserDTO author, Set<UserDTO> allowedToRead) {
+    private boolean lastVersion;
+
+    public PageDTO(Long id, String content, String title, Instant timestamp, UserDTO author, Set<UserDTO> allowedToRead, boolean lastVersion) {
         this.id = id;
         this.content = content;
         this.title = title;
         this.timestamp = timestamp;
         this.author = author;
         this.allowedToRead = allowedToRead;
+        this.lastVersion = lastVersion;
     }
 
     protected PageDTO() {
+    }
+
+    public boolean isLastVersion() {
+        return lastVersion;
     }
 
     public Long getId() {
@@ -50,5 +58,9 @@ public class PageDTO {
 
     public Set<UserDTO> getAllowedToRead() {
         return allowedToRead;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

@@ -55,3 +55,5 @@ b
 0src/main/java/com/wiki/service/ImageService.java,4\3\43504063d546532bcf1f85fe64e21ac9cd585aa8
 f
 6src/main/java/com/wiki/controller/ImageController.java,9\7\9787455ff22f3a9660cd2831e2440289f64bcb87
+8
+wiki.iml,a\7\a7fcf041724caca851870a8046c3f154807a4ac8
