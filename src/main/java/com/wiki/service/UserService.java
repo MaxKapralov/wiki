@@ -23,6 +23,7 @@ public class UserService {
     }
 
     public UserDTO getByUsername(String username) {
-        return userRepository.findByUsername(username).map(user -> new UserDTO(user.getId(), user.getIdentity().getUsername(), user.getFullName())).orElse(null);
+        return userRepository.findByUsername(username).map(user -> new UserDTO(user.getId(), user.getIdentity().getUsername(), user.getFullName()))
+                .orElse(null);
     }
 }
