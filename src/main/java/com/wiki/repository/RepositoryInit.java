@@ -3,6 +3,7 @@ package com.wiki.repository;
 import com.wiki.Utils;
 import com.wiki.model.Identity;
 import com.wiki.model.Page;
+import com.wiki.model.Smpl;
 import com.wiki.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -19,6 +20,8 @@ public class RepositoryInit implements CommandLineRunner {
     private PageRepository pageRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private SmplRepository smplRepository;
 
     public void run(String... args) {
         addIdentity();
@@ -33,9 +36,18 @@ public class RepositoryInit implements CommandLineRunner {
     }
 
     private void addPage() {
-        userRepository.findByName("Maks").ifPresent(user -> pageRepository.save(new Page(user, "Test content", "Test title",
-                Instant.now(), Utils.setOf(userRepository.findByName("Ala").get()))));
-        userRepository.findByName("Maks").ifPresent(user -> pageRepository.save(new Page(user, "Test content2", "Test title2",
-                Instant.now(), Utils.setOf(userRepository.findByName("Ala").get()))));
+        smplRepository.deleteAll();
+        userRepository.findByName("Maks").ifPresent(user -> {
+            Page page = pageRepository.save(new Page(user, "Test content", "Test title",
+                    Instant.now(), Utils.setOf(userRepository.findByName("Ala").get())));
+            Smpl smpl = new Smpl(page.getContent(), page.getTitle(), page.getId());
+            smplRepository.save(smpl);
+        });
+        userRepository.findByName("Maks").ifPresent(user -> {
+            Page page = pageRepository.save(new Page(user, "Test content2", "Test title2",
+                    Instant.now(), Utils.setOf(userRepository.findByName("Ala").get())));
+            Smpl smpl = new Smpl(page.getContent(), page.getTitle(), page.getId());
+            smplRepository.save(smpl);
+        });
     }
 }

@@ -57,3 +57,7 @@ f
 6src/main/java/com/wiki/controller/ImageController.java,9\7\9787455ff22f3a9660cd2831e2440289f64bcb87
 8
 wiki.iml,a\7\a7fcf041724caca851870a8046c3f154807a4ac8
+V
+&src/main/java/com/wiki/model/Smpl.java,c\4\c42af0e997616926bd7e1732876c20cb621ccc7a
+e
+5src/main/java/com/wiki/repository/SmplRepository.java,e\1\e18874964a58e4ab3a791403a0c242b7b73ed727

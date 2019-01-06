@@ -1,19 +1,18 @@
 package com.wiki.service;
 
 import com.wiki.model.Page;
+import com.wiki.model.Smpl;
 import com.wiki.model.User;
 import com.wiki.model.dto.PageDTO;
 import com.wiki.model.dto.UserDTO;
 import com.wiki.repository.PageRepository;
+import com.wiki.repository.SmplRepository;
 import com.wiki.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,10 +20,12 @@ public class PageService {
 
     private final PageRepository pageRepository;
     private final UserRepository userRepository;
+    private final SmplRepository smplRepository;
 
-    public PageService(PageRepository pageRepository, UserRepository userRepository) {
+    public PageService(PageRepository pageRepository, UserRepository userRepository, SmplRepository smplRepository) {
         this.pageRepository = pageRepository;
         this.userRepository = userRepository;
+        this.smplRepository = smplRepository;
     }
 
     public boolean update(PageDTO page, Authentication authentication) {
@@ -36,18 +37,25 @@ public class PageService {
             item.setVersion(false);
             pageRepository.save(item);
         });
+        this.smplRepository.findByPageId(id).ifPresent(item -> {
+            item.setContent(page.getContent());
+            item.setTitle(page.getTitle());
+            smplRepository.save(item);
+        });
         page.setId(null);
-        save(page);
+        save(page, false);
         return true;
     }
 
-    public void save(PageDTO page) {
+    public void save(PageDTO page, boolean newEntity) {
         Set<User> allowedToRead = new HashSet<>();
         userRepository.findById(page.getAuthor().getId()).ifPresent(author -> {
             page.getAllowedToRead().forEach(user ->
                     userRepository.findById(user.getId()).ifPresent(allowedToRead::add));
-            Page entity = new Page(author, page.getContent(), page.getTitle(), page.getTimestamp(), allowedToRead);
-            pageRepository.save(entity);
+            Page entity = pageRepository.save(new Page(author, page.getContent(), page.getTitle(), page.getTimestamp(), allowedToRead));
+            if(newEntity) {
+                smplRepository.save(new Smpl(entity.getContent(), entity.getTitle(), entity.getId()));
+            }
         });
     }
 
@@ -97,5 +105,21 @@ public class PageService {
             return pages;
         }
         return Optional.ofNullable(null);
+    }
+
+    public List<PageDTO> search(String searchTerm, Authentication authentication) {
+        String[] searchArray = searchTerm.split("\\s+");
+        List<Smpl> smplList = smplRepository.findByContentContainsOrTitleContains(Arrays.asList(searchArray), Arrays.asList(searchArray));
+        List<PageDTO> result = new ArrayList<>();
+        smplList.forEach(item ->
+            pageRepository.findById(item.getPageId()).ifPresent(page -> {
+                if(page.getAuthor().getIdentity().getUsername().equals(authentication.getName())
+                        || authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                        || page.getAllowedToRead().stream().anyMatch(user -> user.getIdentity().getUsername().equals(authentication.getName()))) {
+                    result.add(convertPageToDTO(page));
+                }
+            })
+        );
+        return result;
     }
 }

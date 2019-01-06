@@ -23,7 +23,7 @@ public class PageController {
 
     @PostMapping
     public ResponseEntity<Void> saveNewPage(@RequestBody PageDTO page) {
-        pageService.save(page);
+        pageService.save(page, true);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -53,5 +53,10 @@ public class PageController {
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<PageDTO>> search(@RequestParam("searchTerm") String searchTerm, Authentication authentication) {
+        return ResponseEntity.ok(this.pageService.search(searchTerm, authentication));
     }
 }
