@@ -61,3 +61,5 @@ V
 &src/main/java/com/wiki/model/Smpl.java,c\4\c42af0e997616926bd7e1732876c20cb621ccc7a
 e
 5src/main/java/com/wiki/repository/SmplRepository.java,e\1\e18874964a58e4ab3a791403a0c242b7b73ed727
+w
+G.idea/sonarlint/issuestore/a/7/a7fcf041724caca851870a8046c3f154807a4ac8,a\f\afe29f322c92bc73cd01d88fab84802127e3676e
